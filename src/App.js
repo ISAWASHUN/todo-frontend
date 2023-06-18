@@ -1,37 +1,50 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Task from "./components/Task";
-import { Center, Box, CheckboxGroup, Text, Flex, Input, Button } from "@chakra-ui/react";
+import {
+  Flex,
+  Center,
+  Box,
+  CheckboxGroup,
+  Text,
+  Input,
+  Button,
+} from "@chakra-ui/react";
 import axios from "axios";
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
-  const [name, setName] = useState("")
+  const [name, setName] = useState("");
 
   const fetch = async () => {
-    const res = await axios.get("http://localhost:3010/tasks")
-    console.log(res)
-    setTasks(res.data)
-  }
+    const res = await axios.get("http://localhost:3010/tasks");
+    setTasks(res.data);
+  };
 
   const createTask = async () => {
     await axios.post("http://localhost:3010/tasks", {
       name: name,
-      is_done: false
-    })
-    setName("")
-    fetch()
-  }
+      is_done: false,
+    });
+    setName("");
+    fetch();
+  };
+
+  const destroyTask = async (id) => {
+    await axios.delete(`http://localhost:3010/tasks/${id}`);
+    fetch();
+  };
+
+  const toggleIsDone = async (id, index) => {
+    const isDone = tasks[index].is_done;
+    await axios.put(`http://localhost:3010/tasks/${id}`, {
+      is_done: !isDone,
+    });
+    fetch();
+  };
 
   useEffect(() => {
-    fetch()
-  }, [])
-
-  const toggleIsDone = (index) => {
-    const tasksCopy = [...tasks]
-    const isDone = tasksCopy[index].isDone
-    tasksCopy[index].isDone = !isDone
-    setTasks(tasksCopy)
-  }
+    fetch();
+  }, []);
 
   return (
     <Box mt="64px">
@@ -57,14 +70,16 @@ const App = () => {
           <CheckboxGroup>
             {tasks.map((task, index) => {
               return (
-                <Task 
+                <Task
+                  id={task.id}
                   key={index}
                   index={index}
                   name={task.name}
-                  isDone={task.isDone}
+                  isDone={task.is_done}
                   toggleIsDone={toggleIsDone}
+                  destroyTask={destroyTask}
                 />
-              )
+              );
             })}
           </CheckboxGroup>
         </Box>
